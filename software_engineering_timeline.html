@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línea de Tiempo - Ingeniería de Software</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: auto;
+        }
+
+        .timeline-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .academic-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .academic-info p {
+            margin: 5px 0;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 30px 0;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .timeline-item:nth-child(odd) {
+            padding-right: 55%;
+        }
+
+        .timeline-item:nth-child(even) {
+            padding-left: 55%;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: all 0.3s ease;
+            border-left: 5px solid transparent;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            border-left-color: #667eea;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            border-left-color: #764ba2;
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content::before {
+            right: -30px;
+            border-left-color: white;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content::before {
+            left: -30px;
+            border-right-color: white;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            top: 25px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover .timeline-marker {
+            transform: translateX(-50%) scale(1.2);
+            border-color: #764ba2;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .year {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .description {
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .impact {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #555;
+            border-left: 3px solid #667eea;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                padding-left: 80px;
+                padding-right: 20px;
+            }
+
+            .timeline-marker {
+                left: 30px;
+            }
+
+            .timeline-content::before {
+                left: -30px !important;
+                right: auto !important;
+                border-right-color: white !important;
+                border-left-color: transparent !important;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-input {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            width: 300px;
+            max-width: 90%;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="timeline-container">
+        <div class="header">
+            <h1>Línea de Tiempo de la Ingeniería de Software</h1>
+            <p>Explora los hitos más importantes que han definido nuestra disciplina</p>
+            <div class="academic-info">
+                <p><strong>Cátedra:</strong> Ingeniería de Software | <strong>Alumno:</strong> Lopez Sardi Daniel</p>
+                <p><strong>Comisión:</strong> 4K3 | <strong>Universidad:</strong> UTN - FRT | <strong>Año:</strong> 2025</p>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Buscar hitos..." id="searchInput">
+        </div>
+
+        <div class="timeline" id="timeline">
+            <div class="timeline-item" data-category="conceptos" data-year="1936">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">1936</div>
+                    <div class="title">Máquina de Turing</div>
+                    <div class="description">
+                        Alan Turing introduce el concepto de "máquina universal", base teórica de toda
+                        software y computación moderna. Define qué problemas pueden ser resueltos algorítmicamente.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Estableció los fundamentos matemáticos de la computación moderna, definió el concepto de algoritmo
+                        y sentó las bases para todos los desarrollos posteriores en ciencias de la computación.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="lenguajes" data-year="1945">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1945</div>
+                    <div class="title">Primer Programa Almacenado</div>
+                    <div class="description">
+                        John von Neumann describe la arquitectura de computadora de programa almacenado, donde
+                        instrucciones y datos comparten la misma memoria.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Definió la arquitectura fundamental de las computadoras modernas, permitiendo la flexibilidad
+                        que hace posible el software actual y la programación tal como la conocemos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="lenguajes" data-year="1948">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1948</div>
+                    <div class="title">Primer Lenguaje Ensamblador</div>
+                    <div class="description">
+                        Aparecen los primeros lenguajes de bajo nivel que permiten escribir programas en
+                        mnemónicos en vez de solo código máquina.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Estableció el puente crucial entre el código máquina y los lenguajes de alto nivel,
+                        facilitando significativamente la programación y el desarrollo de software.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="lenguajes" data-year="1957">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1957</div>
+                    <div class="title">FORTRAN (IBM)</div>
+                    <div class="description">
+                        Primer lenguaje de alto nivel ampliamente usado, diseñado
+                        para cálculos científicos y numéricos.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Demostró que era posible escribir programas eficientes en lenguajes de alto nivel, 
+                        estableciendo el paradigma de traducción automática y abstracción en programación.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="lenguajes" data-year="1959">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1959</div>
+                    <div class="title">COBOL</div>
+                    <div class="description">
+                        Nace COBOL, orientado a negocios. Busca permitir
+                        la expansión del software en banca, gobierno y empresas.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Demostró que los lenguajes podían ser específicos para dominios, estableció estándares
+                        para aplicaciones empresariales y sigue siendo usado en sistemas críticos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="conceptos" data-year="1965">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">1965</div>
+                    <div class="title">Multiprogramación</div>
+                    <div class="description">
+                        Se introducen sistemas operativos que permiten correr
+                        varios procesos a la vez, base para el multitasking.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Revolucionó la eficiencia de las computadoras, permitiendo mejor utilización de recursos
+                        y sentando las bases para los sistemas operativos modernos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1969">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1969</div>
+                    <div class="title">UNIX</div>
+                    <div class="description">
+                        Ken Thompson y Dennis Ritchie desarrollan UNIX en Bell Labs.
+                        Piedra angular de los sistemas modernos.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Estableció conceptos fundamentales como pipes, jerarquía de archivos y filosofía de herramientas
+                        pequeñas y especializadas. Base de Linux, macOS y sistemas modernos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="lenguajes" data-year="1972">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1972</div>
+                    <div class="title">Lenguaje C</div>
+                    <div class="description">
+                        Dennis Ritchie crea C, que se convierte en el estándar para
+                        sistemas operativos y software de propósito general.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Influenció prácticamente todos los lenguajes modernos, permitió el desarrollo de sistemas
+                        operativos portables y estableció estándares de programación de sistemas.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1976">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1976</div>
+                    <div class="title">Microsoft y Apple</div>
+                    <div class="description">
+                        Microsoft vende su primer intérprete BASIC y Apple lanza
+                        su Apple I. El software empieza a comercializarse masivamente.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Estableció la industria del software comercial y democratizó el acceso a las computadoras
+                        personales, transformando el software de herramienta académica a producto comercial.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1983">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1983</div>
+                    <div class="title">GNU y el Movimiento del Software Libre</div>
+                    <div class="description">
+                        Richard Stallman crea el proyecto GNU y el concepto de
+                        licencias libres.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Creó un ecosistema de herramientas de desarrollo libres, estableció principios éticos 
+                        en el desarrollo y sentó las bases para el movimiento open source.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1985">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1985</div>
+                    <div class="title">Windows 1.0</div>
+                    <div class="description">
+                        Microsoft lanza Windows, popularizando la interfaz gráfica
+                        de usuario (GUI).
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Democratizó el uso de computadoras personales, estableció estándares de interfaz gráfica
+                        y cambió la forma en que los usuarios interactúan con el software.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1991">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1991</div>
+                    <div class="title">Linux y Python</div>
+                    <div class="description">
+                        Linus Torvalds libera el kernel Linux y Guido van Rossum presenta
+                        Python, ambos revolucionando el desarrollo y la comunidad open source.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Linux se convirtió en la base de la infraestructura moderna de Internet, mientras Python
+                        democratizó la programación y se volvió esencial para IA y ciencia de datos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="internet" data-year="1995">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Internet y Web</div>
+                    <div class="year">1995</div>
+                    <div class="title">Java y la Web</div>
+                    <div class="description">
+                        Sun Microsystems lanza Java con el lema "Write Once, Run
+                        Anywhere". El mismo año nace JavaScript junto con la web dinámica.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Java estableció la portabilidad multiplataforma, mientras JavaScript se convirtió en el
+                        lenguaje universal de la web, transformando las páginas estáticas en aplicaciones interactivas.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="internet" data-year="2004">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Internet y Web</div>
+                    <div class="year">2004</div>
+                    <div class="title">Web 2.0</div>
+                    <div class="description">
+                        Surgen redes sociales, aplicaciones colaborativas y
+                        servicios en la nube. El software pasa a ser principalmente
+                        servicio (SaaS).
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Transformó el software de productos instalables a servicios en la nube, estableció
+                        nuevos modelos de negocio y cambió la forma en que consumimos y desarrollamos aplicaciones.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="conceptos" data-year="2010">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">2010s</div>
+                    <div class="title">Inteligencia Artificial y Software en la Nube</div>
+                    <div class="description">
+                        Avances en IA, machine learning, microservicios y
+                        desarrollo en la nube. El software pasa a ser principalmente dinámico.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Está redefiniendo completamente el desarrollo de software con automatización inteligente,
+                        arquitecturas distribuidas y nuevos paradigmas de programación asistida por IA.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="conceptos" data-year="2020">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">2020s</div>
+                    <div class="title">IA Generativa en el Desarrollo</div>
+                    <div class="description">
+                        GitHub Copilot, ChatGPT y herramientas de IA comienzan a asistir directamente en la escritura
+                        de código, documentación y arquitectura de software.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Está transformando la productividad del desarrollo, automatizando tareas repetitivas 
+                        y permitiendo a los desarrolladores enfocarse en problemas de mayor nivel y creatividad.
+                    </div>
+                </div>
+            </div>
+        </div>-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1980</div>
+                    <div class="title">C++ y Programación Orientada a Objetos</div>
+                    <div class="description">
+                        Bjarne Stroustrup comienza el desarrollo de C++, introduciendo la programación orientada a objetos 
+                        al mundo del desarrollo de sistemas.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Popularizó la OOP, permitiendo mejor organización del código, reutilización 
+                        y mantenimiento de aplicaciones complejas. Influenció Java, C# y muchos otros lenguajes.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1982">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1982</div>
+                    <div class="title">GNU y Software Libre</div>
+                    <div class="description">
+                        Richard Stallman lanza el Proyecto GNU, estableciendo los fundamentos del movimiento de software libre 
+                        y las licencias copyleft.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Creó un ecosistema de herramientas de desarrollo libres, estableció principios éticos 
+                        en el desarrollo de software y sentó las bases para el desarrollo colaborativo.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="internet" data-year="1990">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Internet y Web</div>
+                    <div class="year">1990</div>
+                    <div class="title">World Wide Web</div>
+                    <div class="description">
+                        Tim Berners-Lee desarrolla la World Wide Web en el CERN, creando HTML, HTTP y URLs. 
+                        Nace la era de las aplicaciones web.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Transformó completamente el desarrollo de software, creando nuevos paradigmas de aplicaciones, 
+                        arquitecturas distribuidas y la democratización del acceso a la información.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="1991">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">1991</div>
+                    <div class="title">Linux - Sistema Operativo Libre</div>
+                    <div class="description">
+                        Linus Torvalds lanza Linux, un sistema operativo de código abierto que revoluciona 
+                        el desarrollo colaborativo de software.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Demostró el poder del desarrollo distribuido, estableció Linux como plataforma 
+                        dominante en servidores e inspiró el modelo de desarrollo de código abierto.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="lenguajes" data-year="1995">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Lenguajes de Programación</div>
+                    <div class="year">1995</div>
+                    <div class="title">JavaScript y Java</div>
+                    <div class="description">
+                        Brendan Eich crea JavaScript en Netscape, mientras Sun lanza Java. Dos lenguajes que definirán 
+                        el desarrollo web y empresarial respectivamente.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> JavaScript se convierte en el lenguaje universal de la web, mientras Java 
+                        establece la portabilidad ("write once, run anywhere") y la programación empresarial moderna.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="metodologias" data-year="2001">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Metodologías</div>
+                    <div class="year">2001</div>
+                    <div class="title">Manifiesto Ágil</div>
+                    <div class="description">
+                        17 desarrolladores firman el Manifiesto Ágil, revolucionando las metodologías de desarrollo 
+                        con principios de colaboración, adaptabilidad y entrega continua.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Transformó la industria del software, estableciendo metodologías como Scrum y XP, 
+                        y cambiando el enfoque hacia el valor del cliente y la adaptabilidad.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="2005">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">2005</div>
+                    <div class="title">Git - Control de Versiones Distribuido</div>
+                    <div class="description">
+                        Linus Torvalds crea Git para el desarrollo del kernel de Linux. Se convierte en el estándar 
+                        de control de versiones distribuido.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Revolucionó la colaboración en el desarrollo de software, permitió el desarrollo 
+                        distribuido a gran escala y se convirtió en la base de plataformas como GitHub.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="internet" data-year="2008">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Internet y Web</div>
+                    <div class="year">2008</div>
+                    <div class="title">GitHub y Desarrollo Colaborativo</div>
+                    <div class="description">
+                        Se lanza GitHub, transformando la forma en que los desarrolladores colaboran y comparten código. 
+                        Democratiza el desarrollo de software open source.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Creó la mayor comunidad de desarrolladores del mundo, estableció nuevos estándares 
+                        de colaboración y transparencia en el desarrollo de software.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="metodologias" data-year="2009">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Metodologías</div>
+                    <div class="year">2009</div>
+                    <div class="title">DevOps</div>
+                    <div class="description">
+                        Patrick Debois acuña el término "DevOps" en la conferencia DevOpsDays. Se establece la cultura 
+                        de colaboración entre desarrollo y operaciones.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Eliminó silos organizacionales, aceleró los ciclos de entrega, mejoró la calidad 
+                        y confiabilidad del software mediante automatización e integración continua.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="herramientas" data-year="2013">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Herramientas de Desarrollo</div>
+                    <div class="year">2013</div>
+                    <div class="title">Docker y Contenedores</div>
+                    <div class="description">
+                        Docker populariza la tecnología de contenedores, revolucionando el deployment y la portabilidad 
+                        de aplicaciones.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Simplificó el deployment, mejoró la consistencia entre entornos, 
+                        y habilitó arquitecturas de microservicios y cloud-native applications.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="conceptos" data-year="2015">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">2015</div>
+                    <div class="title">Microservicios</div>
+                    <div class="description">
+                        Martin Fowler populariza el concepto de microservicios, estableciendo nuevos patrones arquitectónicos 
+                        para aplicaciones distribuidas y escalables.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Permitió mayor escalabilidad y flexibilidad en sistemas complejos, 
+                        habilitó equipos independientes y aceleró la innovación en aplicaciones empresariales.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="conceptos" data-year="2018">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">2018</div>
+                    <div class="title">Low-Code/No-Code</div>
+                    <div class="description">
+                        Las plataformas de desarrollo low-code y no-code ganan popularidad, democratizando el desarrollo 
+                        de aplicaciones y permitiendo a no-programadores crear software.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Expandió quién puede crear software, aceleró el desarrollo de aplicaciones 
+                        empresariales y redujo la barrera de entrada para la innovación digital.
+                    </div>
+                </div>
+            </div>
+
+            <div class="timeline-item" data-category="conceptos" data-year="2020">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="category-tag">Conceptos Fundamentales</div>
+                    <div class="year">2020</div>
+                    <div class="title">IA en el Desarrollo de Software</div>
+                    <div class="description">
+                        GitHub Copilot y otras herramientas de IA comienzan a asistir en la escritura de código, 
+                        marcando el inicio de la era de la programación asistida por IA.
+                    </div>
+                    <div class="impact">
+                        <strong>Impacto:</strong> Está transformando la productividad del desarrollo, automatizando tareas repetitivas 
+                        y permitiendo a los desarrolladores enfocarse en problemas de mayor nivel.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allItems = [];
+        let filteredItems = [];
+
+        function initializeTimeline() {
+            allItems = Array.from(document.querySelectorAll('.timeline-item'));
+            filteredItems = [...allItems];
+            
+            // Animate items on load
+            allItems.forEach((item, index) => {
+                item.style.animationDelay = `${index * 0.1}s`;
+            });
+
+            // Setup search
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+        }
+
+        function filterByCategory(category) {
+            // Update active button
+            document.querySelectorAll('.control-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter items
+            allItems.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.classList.remove('hidden');
+                    item.style.display = 'block';
+                } else {
+                    item.classList.add('hidden');
+                    item.style.display = 'none';
+                }
+            });
+
+            // Update filtered items array
+            filteredItems = allItems.filter(item => 
+                category === 'all' || item.dataset.category === category
+            );
+
+            // Re-animate visible items
+            animateVisibleItems();
+        }
+
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            allItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const matchesSearch = searchTerm === '' || text.includes(searchTerm);
+                const isVisible = !item.classList.contains('hidden');
+                
+                if (matchesSearch && isVisible) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            animateVisibleItems();
+        }
+
+        function animateVisibleItems() {
+            const visibleItems = allItems.filter(item => 
+                item.style.display !== 'none'
+            );
+            
+            visibleItems.forEach((item, index) => {
+                item.style.animation = 'none';
+                setTimeout(() => {
+                    item.style.animation = `fadeInUp 0.6s ease forwards`;
+                    item.style.animationDelay = `${index * 0.1}s`;
+                }, 10);
+            });
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeTimeline);
+
+        // Add smooth scrolling for better UX
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('timeline-content') || 
+                e.target.closest('.timeline-content')) {
+                e.target.closest('.timeline-item').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        });
+    </script>
+</body>
+</html>
